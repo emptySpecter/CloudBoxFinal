@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import com.geekbrains.april.cloud.box.client.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<VBox fx:id="rootCloudBox" alignment="CENTER" prefHeight="600.0" prefWidth="1000.0"
+      xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.geekbrains.april.cloud.box.client.MainController">
+    <HBox VBox.vgrow="ALWAYS">
+        <children>
+            <VBox maxWidth="Infinity" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                <HBox alignment="TOP_CENTER" prefHeight="30.0">
+                    <children>
+                        <Label fx:id="titleLoc" alignment="CENTER" maxWidth="Infinity" prefHeight="30.0"
+                               style="-fx-background-color: #ddd" text="Local" HBox.hgrow="ALWAYS">
+                            <font>
+                                <Font name="Arial Bold" size="16.0"/>
+                            </font>
+                            <HBox.margin>
+                                <Insets bottom="1.0" top="1.0"/>
+                            </HBox.margin>
+                            <effect>
+                                <InnerShadow choke="0.4" color="#00000026" height="20.0" radius="8.25" width="15.0"/>
+                            </effect>
+                        </Label>
+                    </children>
+                    <VBox.margin>
+                        <Insets/>
+                    </VBox.margin>
+                </HBox>
+                <TableView fx:id="localfilesTable" maxWidth="Infinity" prefHeight="200.0" prefWidth="400.0"
+                           VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="tcLoadedLoc" editable="false" prefWidth="50.0"
+                                     style="-fx-alignment: CENTER-RIGHT;" text="Loaded">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="percent"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXHelper.FormattedTableCellFactory
+                                        alignment="right" format="#% "/>
+                            </cellFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="tcFileNameLoc" editable="false" prefWidth="311.0" text="Name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="fXFileName"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXFileInfo.FileNameColumnMarkAsProcessing/>
+                            </cellFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="tcSizeLoc" editable="false" prefWidth="111.0" text="Size">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="fileSize"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXHelper.FormattedTableCellFactory
+                                        alignment="right" format="#,##0"/>
+                            </cellFactory>
+                        </TableColumn>
+                    </columns>
+                    <VBox.margin>
+                        <Insets bottom="2.0"/>
+                    </VBox.margin>
+                </TableView>
+                <HBox prefHeight="30.0" prefWidth="400.0">
+                    <Button fx:id="btnRefreshLoc" maxHeight="Infinity" maxWidth="Infinity"
+                            onAction="#pressBtnRefreshLoc" text="Refresh" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnDeleteLoc" maxHeight="Infinity" maxWidth="Infinity" onAction="#pressBtnDeleteLoc"
+                            text="Delete" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnUploadLoc" maxHeight="Infinity" maxWidth="Infinity" mnemonicParsing="false"
+                            onAction="#pressBtnUploadLoc" text="Upload" HBox.hgrow="ALWAYS"/>
+                    <VBox.margin>
+                        <Insets bottom="2.0"/>
+                    </VBox.margin>
+                </HBox>
+                <HBox.margin>
+                    <Insets right="2.0"/>
+                </HBox.margin>
+            </VBox>
+            <VBox maxWidth="Infinity" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                <HBox alignment="TOP_CENTER" prefHeight="30.0">
+                    <children>
+                        <Label fx:id="titleRem" alignment="CENTER" maxWidth="Infinity" prefHeight="30.0"
+                               style="-fx-background-color: #ddd" text="Remote" HBox.hgrow="ALWAYS">
+                            <font>
+                                <Font name="Arial Bold" size="16.0"/>
+                            </font>
+                            <HBox.margin>
+                                <Insets bottom="1.0" top="1.0"/>
+                            </HBox.margin>
+                            <effect>
+                                <InnerShadow choke="0.4" color="#00000026" height="20.0" radius="8.25" width="15.0"/>
+                            </effect>
+                        </Label>
+                    </children>
+                    <VBox.margin>
+                        <Insets/>
+                    </VBox.margin>
+                </HBox>
+                <TableView fx:id="remotefilesTable" maxWidth="Infinity" prefHeight="200.0" prefWidth="400.0"
+                           VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="tcLoadedRem" editable="false" prefWidth="50.0"
+                                     style="-fx-alignment: CENTER-RIGHT;" text="Loaded">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="percent"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXHelper.FormattedTableCellFactory
+                                        alignment="right" format="#% "/>
+                            </cellFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="tcFileNameRem" editable="false" prefWidth="311.0" text="Name">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="fXFileName"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXFileInfo.FileNameColumnMarkAsProcessing/>
+                            </cellFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="tcSizeRem" editable="false" prefWidth="111.0" text="Size">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="fileSize"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <com.geekbrains.april.cloud.box.client.FXHelper.FormattedTableCellFactory
+                                        alignment="right" format="#,##0"/>
+                            </cellFactory>
+                        </TableColumn>
+                    </columns>
+                    <VBox.margin>
+                        <Insets bottom="2.0"/>
+                    </VBox.margin>
+                </TableView>
+                <HBox prefHeight="30.0" prefWidth="400.0">
+                    <Button fx:id="btnRefreshRem" maxHeight="Infinity" maxWidth="Infinity"
+                            onAction="#pressBtnRefreshRem" text="Refresh" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnDeleteRem" maxHeight="Infinity" maxWidth="Infinity" onAction="#pressBtnDeleteRem"
+                            text="Delete" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnDownloadRem" maxHeight="Infinity" maxWidth="Infinity" mnemonicParsing="false"
+                            onAction="#pressBtnDownloadRem" text="Download" HBox.hgrow="ALWAYS"/>
+                    <VBox.margin>
+                        <Insets bottom="2.0"/>
+                    </VBox.margin>
+                </HBox>
+                <HBox.margin>
+                    <Insets right="2.0"/>
+                </HBox.margin>
+            </VBox>
+        </children>
+    </HBox>
+    <padding>
+        <Insets left="5.0" right="5.0"/>
+    </padding>
+</VBox>
