@@ -14,7 +14,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -54,7 +53,7 @@ public class MainController implements Initializable {
     private Predicate<String> receiverInProgress;
     private Function<FileInfo, AbstractMessage> toggleClientReceiver;
 
-    private HashMap<String,String> name2MD5 = new HashMap<>();
+    private HashMap<String, String> name2MD5 = new HashMap<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,7 +61,7 @@ public class MainController implements Initializable {
         localfilesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 String btnText = "Upload";
-                if (newSelection.getPercent() < 0.999999 || UnderDownloaded(newSelection.fileInfo, remotefilesTable) != null) {
+                if (newSelection.getPercent() < 0.999999 || underDownloaded(newSelection.fileInfo, remotefilesTable) != null) {
                     btnText = "Resume";
                     if (newSelection.inProgress) btnText = "Pause";
                 }
@@ -73,7 +72,7 @@ public class MainController implements Initializable {
         remotefilesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 String btnText = "Download";
-                if (newSelection.getPercent() < 0.999999  || UnderDownloaded(newSelection.fileInfo, localfilesTable) != null) {
+                if (newSelection.getPercent() < 0.999999 || underDownloaded(newSelection.fileInfo, localfilesTable) != null) {
                     btnText = "Resume";
                     if (newSelection.inProgress) btnText = "Pause";
                 }
@@ -110,25 +109,6 @@ public class MainController implements Initializable {
         Network.sendMsg(new FileDeleteRequest(info));
     }
 
-    public void pressBtnRefreshRem(ActionEvent actionEvent) {
-        Network.sendMsg(new FileListRequest());
-    }
-
-    public void pressBtnDownloadRem(ActionEvent actionEvent) {
-        FileInfo info = remotefilesTable.getSelectionModel().getSelectedItem().getFileInfo();
-        if (info.position < info.fileLength) {
-            Network.sendMsg(new FileUploadToggleRequest(info));
-            Network.sendMsg(new FileListRequest());
-            refreshLocalFilesList();
-        } else {
-            AbstractMessage result = toggleClientReceiver.apply(info);
-            if (result != null) {
-                Network.sendMsg(result);
-                Network.sendMsg(new FileListRequest());
-            }
-        }
-    }
-
     public void pressBtnDeleteLoc(ActionEvent actionEvent) throws IOException {
         FileInfo info = localfilesTable.getSelectionModel().getSelectedItem().getFileInfo();
         String longFileName = root_dir + "/" + info.fileName;
@@ -136,29 +116,51 @@ public class MainController implements Initializable {
         refreshLocalFilesList();
     }
 
-    public void pressBtnRefreshLoc(ActionEvent actionEvent) {
+    public void toggleDownload(FileInfo info) {
+        AbstractMessage result = toggleClientReceiver.apply(info);
+        if (result != null) {
+            Network.sendMsg(result);
+            Network.sendMsg(new FileListRequest());
+        }
+    }
+
+    public void toggleUpload(FileInfo info) {
+        FileInfo udFileInfo = underDownloaded(info, remotefilesTable);
+        if (udFileInfo == null) {
+            if (info.MD5.equals("")) info.MD5 = FileHelper.calculateMD5(Paths.get(root_dir + "/" + info.fileName));
+            name2MD5.put(info.fileName, info.MD5);
+            info.position = 0;
+        } else {
+            info.MD5 = udFileInfo.MD5;
+        }
+        Network.sendMsg(new FileUploadToggleRequest(info));
+        Network.sendMsg(new FileListRequest());
         refreshLocalFilesList();
+    }
+
+    public void pressBtnDownloadRem(ActionEvent actionEvent) {
+        FileInfo info = remotefilesTable.getSelectionModel().getSelectedItem().getFileInfo();
+        if (info.position == info.fileLength) {
+            FileInfo udFileInfo = underDownloaded(info, localfilesTable);
+            if (udFileInfo != null) info.position = udFileInfo.position;
+            toggleDownload(info);
+        } else {
+            toggleUpload(info);
+        }
     }
 
     public void pressBtnUploadLoc(ActionEvent actionEvent) {
         FileInfo info = localfilesTable.getSelectionModel().getSelectedItem().getFileInfo();
-        if(info.position == info.fileLength) {
-            FileInfo udFileInfo = UnderDownloaded(info, remotefilesTable);
-            if (udFileInfo == null) {
-                if (info.MD5.equals("")) info.MD5 = FileHelper.calculateMD5(Paths.get(root_dir + "/" + info.fileName));
-                name2MD5.put(info.fileName, info.MD5);
-                info.position = 0;
-            } else {
-                info.MD5 = udFileInfo.MD5;
-            }
-            Network.sendMsg(new FileUploadToggleRequest(info));
-            Network.sendMsg(new FileListRequest());
+        if (info.position == info.fileLength) {
+            FileInfo udFileInfo = underDownloaded(info, remotefilesTable);
+            if (udFileInfo != null) info.position = udFileInfo.position;
+            toggleUpload(info);
         } else {
-
+            toggleDownload(info);
         }
     }
 
-    private FileInfo UnderDownloaded(FileInfo info, TableView<FXFileInfo> tableView) {
+    private FileInfo underDownloaded(FileInfo info, TableView<FXFileInfo> tableView) {
         FileInfo fileInfo = null;
         try {
             FXFileInfo fxFileInfo = tableView.getItems().stream()
@@ -169,6 +171,14 @@ public class MainController implements Initializable {
         } catch (NoSuchElementException e) {
         }
         return fileInfo;
+    }
+
+    public void pressBtnRefreshRem(ActionEvent actionEvent) {
+        Network.sendMsg(new FileListRequest());
+    }
+
+    public void pressBtnRefreshLoc(ActionEvent actionEvent) {
+        refreshLocalFilesList();
     }
 
     FXFileInfo getFileInfoFX(Path p) {
@@ -183,7 +193,10 @@ public class MainController implements Initializable {
     }
 
     public void refreshLocalFilesList() {
-        localfilesTable.getItems().stream().forEach( o -> {if(!o.fileInfo.MD5.isEmpty()) name2MD5.put(o.fileInfo.fileName, o.fileInfo.MD5);});
+        int idx = localfilesTable.getSelectionModel().getSelectedIndex();
+        localfilesTable.getItems().stream().forEach(o -> {
+            if (!o.fileInfo.MD5.isEmpty()) name2MD5.put(o.fileInfo.fileName, o.fileInfo.MD5);
+        });
         localfilesTable.getItems().clear();
         try {
             Files.list(Paths.get(root_dir))
@@ -192,24 +205,25 @@ public class MainController implements Initializable {
                     .filter(o -> o != null)
                     .forEach(o -> {
                         String res = name2MD5.get(o.fileInfo.fileName);
-                        if(res != null) o.fileInfo.MD5 = res;
+                        if (res != null) o.fileInfo.MD5 = res;
                         o.setInProgress(senderInProgress.test(o.fileInfo.MD5) || receiverInProgress.test(o.fileInfo.MD5));
                         localfilesTable.getItems().add(o);
                     });
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (!localfilesTable.getItems().isEmpty()) localfilesTable.getSelectionModel().select(0);
+        localfilesTable.getSelectionModel().select(idx);
     }
 
     public void refreshRemoteFilesList(ArrayList<FileInfo> list) {
+        int idx = remotefilesTable.getSelectionModel().getSelectedIndex();
         remotefilesTable.getItems().clear();
         for (FileInfo info : list) {
             FXFileInfo fxinfo = new FXFileInfo(info);
             fxinfo.setInProgress(senderInProgress.test(info.MD5) || receiverInProgress.test(info.MD5));
             remotefilesTable.getItems().add(fxinfo);
         }
-        if (!remotefilesTable.getItems().isEmpty()) remotefilesTable.getSelectionModel().select(0);
+        remotefilesTable.getSelectionModel().select(idx);
     }
 
     public void updateRemoteFileInfo(FileInfo fileInfo) {

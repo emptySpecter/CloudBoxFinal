@@ -59,7 +59,7 @@ public class IncomeMessagesDispatcher implements Runnable {
         @Override
         public AbstractMessage updateListReceive() {
             FXHelper.updateUI(() -> mainController.refreshLocalFilesList());
-            return null;
+            return new FileListRequest();
         }
 
     };

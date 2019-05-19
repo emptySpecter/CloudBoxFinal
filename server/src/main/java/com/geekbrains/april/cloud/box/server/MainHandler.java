@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class MainHandler extends ChannelInboundHandlerAdapter {
     int user_id = 0;
@@ -43,12 +42,10 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
         @Override
         public void updateIndiviualSend(FileInfo info) throws CloneNotSupportedException {
-//TODO
         }
 
         @Override
         public void updateListSend() {
-//TODO
         }
 
         @Override

@@ -20,4 +20,13 @@ public class FileInfo implements Serializable, Cloneable {
         return super.clone();
     }
 
+    @Override
+    public String toString() {
+        return "FileInfo{" +
+                "fileName='" + fileName + '\'' +
+                ", MD5='" + MD5 + '\'' +
+                ", fileLength=" + fileLength +
+                ", position=" + position +
+                '}';
+    }
 }

@@ -3,8 +3,6 @@ package com.geekbrains.april.cloud.box.client;
 import com.geekbrains.april.cloud.box.common.FileInfo;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
